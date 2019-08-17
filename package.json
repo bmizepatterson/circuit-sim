@@ -1,0 +1,22 @@
+{
+  "name": "circuit-sim",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bmizepatterson/circuit-sim.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bmizepatterson/circuit-sim/issues"
+  },
+  "homepage": "https://github.com/bmizepatterson/circuit-sim#readme",
+  "dependencies": {
+    "paper": "^0.12.3"
+  }
+}
