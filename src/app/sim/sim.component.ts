@@ -17,6 +17,9 @@ export class SimComponent implements OnInit {
     backLayer: Layer;
     pointerLayer: Layer;
 
+    // Subscriptions
+    subscriptions = [];
+
     ngOnInit() {
         // Setup PaperJs
         paper.install(window);
@@ -31,6 +34,11 @@ export class SimComponent implements OnInit {
 
         // Setup workspace
         this.drawBackground();
+
+        // Subscriptions
+        this.subscriptions.push(
+            
+        );
     }
 
     drawBackground() {
