@@ -1,43 +1,57 @@
 import { Component, OnInit } from '@angular/core';
-import { Path, Rectangle, Point, view, Layer } from 'paper';
-import * as paper from 'paper';
+import { Path, Rectangle, Point, view, Layer, ToolEvent } from 'paper';
 import { West } from '../theme/themes';
+import { Subscriber } from '../model/subscriber';
+import { ToolService } from '../services/tool.service';
+import { Tool } from '../model/tool';
+import * as Paper from 'paper';
 
 @Component({
     templateUrl: './sim.component.html',
     styleUrls: ['./sim.component.scss']
 })
-export class SimComponent implements OnInit {
+export class SimComponent extends Subscriber implements OnInit {
 
     gridSize = 50;
 
     pointer: Path.Circle;
+    pointerActive = true;
 
     // Layers
     backLayer: Layer;
     pointerLayer: Layer;
 
-    // Subscriptions
-    subscriptions = [];
+    selectedTool: Tool;
+
+    constructor(
+        private tools: ToolService,
+    ) {
+        super();
+    }
 
     ngOnInit() {
         // Setup PaperJs
-        paper.install(window);
-        paper.setup('sim');
+        Paper.setup('sim');
         this.backLayer = new Layer();
         this.pointerLayer = new Layer();
 
         // Route events
-        paper.view.onResize = e => this.onResize(e);
-        paper.view.onMouseMove = e => this.onMouseMove(e);
-        paper.view.onMouseLeave = () => this.onMouseLeave();
+        view.onResize = e => this.onResize(e);
+        view.onMouseUp = e => this.onMouseUp(e);
+        view.onMouseDown = e => this.onMouseDown(e);
+        view.onMouseMove = e => this.onMouseMove(e);
+        view.onMouseDrag = e => this.onMouseDrag(e);
+        view.onMouseLeave = () => this.onMouseLeave();
 
         // Setup workspace
         this.drawBackground();
 
         // Subscriptions
-        this.subscriptions.push(
-            
+        this._subscriptions.push(
+            this.tools.selectedTool.subscribe((tool: Tool) => {
+                this.selectedTool = tool;
+                console.log('Selected Tool:', tool);
+            })
         );
     }
 
@@ -74,17 +88,40 @@ export class SimComponent implements OnInit {
         this.pointerLayer.fillColor.alpha = 0.8;
     }
 
-    onResize(event: any) {
+    clearPointer() {
+        this.pointer = null;
+        this.pointerLayer.removeChildren();
+    }
+
+    onResize(event: ToolEvent) {
         this.drawBackground();
     }
 
-    onMouseMove(event: any) {
-        this.drawPointer(event.point);
+    onMouseMove(event: ToolEvent) {
+        if (this.pointerActive) {
+            this.drawPointer(event.point);
+        }
     }
 
     onMouseLeave() {
-        this.pointer = null;
-        this.pointerLayer.removeChildren();
+        this.clearPointer();
+    }
+
+    onMouseDrag(event: ToolEvent) {
+        if (this.pointerActive) {
+            this.drawPointer(event.point);
+        }
+    }
+
+    onMouseDown(event: ToolEvent) {
+        if (this.selectedTool) {
+            this.pointerActive = false;
+            this.clearPointer();
+        }
+    }
+
+    onMouseUp(event: ToolEvent) {
+        this.pointerActive = true;
     }
 
 }
