@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Project, Path } from 'paper';
+import { Path, Rectangle, Point, Color } from 'paper';
 import * as paper from 'paper';
 
 @Component({
@@ -8,17 +8,18 @@ import * as paper from 'paper';
 })
 export class SimComponent implements OnInit {
 
-    constructor() { }
-
     ngOnInit() {
-        window['paper'] = paper;
+        // Setup PaperJs
+        paper.install(window);
+        paper.setup('sim');
 
-        const project1 = new Project('sim');
-        const path = new Path.Circle({
-            center: [80, 50],
-            radius: 30,
-            strokeColor: 'black'
-        });
+        // Setup workspace
+        this.setupWorkspace();
+    }
+
+    setupWorkspace() {
+        const background = new Path.Rectangle(new Rectangle(new Point(0, 0), new Point(100, 100)));
+        background.fillColor = new Color(0, 0, 0);
     }
 
 }
