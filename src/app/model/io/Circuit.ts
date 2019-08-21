@@ -1,4 +1,5 @@
 import { IOElement } from './IOElement';
+import { Wire } from './Wire';
 
 export class Circuit {
     id = 'circuit';
@@ -49,7 +50,7 @@ export class Circuit {
         return this;
     }
 
-    connect(element1: IOElement, element2: IOElement): this {
+    protected _connect(element1: IOElement, element2: IOElement): this {
         if (!this.nodes.includes(element1.id)) {
             this.add(element1);
         }
@@ -62,6 +63,16 @@ export class Circuit {
         return this;
     }
 
+    connect(element1: IOElement, element2: IOElement): this {
+        if (element2 instanceof Wire) {
+            // Wires have reciprocal connections
+            this._connect(element1, element2);
+            this._connect(element2, element1);
+            return this;
+        }
+        return this._connect(element1, element2);
+    }
+
     /**
      * Determine whether element1 is connected to element2
      */
@@ -70,38 +81,39 @@ export class Circuit {
     }
 
     /**
-     * Determine whether the circuit is closed--i.e. the graph is cyclic.
+     * Determine whether the the graph is cyclic.
      * See https://hackernoon.com/the-javascript-developers-guide-to-graphs-and-detecting-cycles-in-them-96f4f619d563
      * The stack param in the recursive function is the recursion stack and keeps track of the 'back edges',
      * the nodes we visited to get us to the current node. If a child node ever connects to a node on the stack,
-     * that means we've come back around to where we started, we've found a cycle, and our circuit is closed.
+     * that means we've come back around to where we started, we've found a cycle.
      */
-    isClosed(): boolean {
-
-        // Make a local copy of the graph
-        const graph = this.graph;
-        function isClosedRecursive(node: string, visited: GraphTraversalStatus, stack: GraphTraversalStatus): boolean {
-            if (!visited[node]) {
-                visited[node] = stack[node] = true;
-                const children = graph[node];
-                for (const child of children) {
-                    if (!visited[child] && isClosedRecursive(child, visited, stack)) {
-                        return true;
-                    } else if (stack[child]) {
-                        return true;
-                    }
-                }
-            }
-            // This node didn't initiate a cycle, so pop it off the stack.
-            stack[node] = false;
-            return false;
-        }
-
+    isCyclic(): boolean {
         for (const node of this.nodes) {
-            if (isClosedRecursive(node, {}, {})) {
+            if (this._isCyclicRecursive(node, {}, {})) {
                 return true;
             }
         }
+        return false;
+    }
+
+    protected _isCyclicRecursive(
+        node: string, visited: GraphTraversalStatus, stack: GraphTraversalStatus,
+        callback = (n: string, v: GraphTraversalStatus, s: GraphTraversalStatus): void => {}
+    ): boolean {
+        if (!visited[node]) {
+            visited[node] = stack[node] = true;
+            callback(node, visited, stack);
+            const children = this.graph[node];
+            for (const child of children) {
+                if (!visited[child] && this._isCyclicRecursive(child, visited, stack)) {
+                    return true;
+                } else if (stack[child]) {
+                    return true;
+                }
+            }
+        }
+        // This node didn't initiate a cycle, so pop it off the stack.
+        stack[node] = false;
         return false;
     }
 
@@ -116,6 +128,11 @@ export class Circuit {
         return Object.keys(traversed);
     }
 
+    isClosed() {
+        // If there is no power source, then no
+        
+    }
+
     deepSearch(): GraphTraversalStatus {
         const visited = {};
         for (const node of this.nodes) {
@@ -124,10 +141,10 @@ export class Circuit {
         return visited;
     }
 
-    _deepSearchUtil(node: string, visited: GraphTraversalStatus, callback = (_: string) => {}) {
+    _deepSearchUtil(node: string, visited: GraphTraversalStatus, callback = (n: string, v: GraphTraversalStatus): void => {}) {
         if (!visited[node]) {
             visited[node] = true;
-            callback(node);
+            callback(node, visited);
             const neighbors = this.graph[node];
             for (const neighbor of neighbors) {
                 this._deepSearchUtil(neighbor, visited);

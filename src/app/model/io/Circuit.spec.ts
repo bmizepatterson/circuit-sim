@@ -1,5 +1,7 @@
 import { Circuit } from './Circuit';
 import { Wire } from './Wire';
+import { IOElement } from './IOElement';
+import { Battery } from './Battery';
 
 describe('Circuits', () => {
     let c = null, wire1 = null, wire2 = null, wire3 = null, wire4 = null;
@@ -18,7 +20,6 @@ describe('Circuits', () => {
 
     it('can add nodes', () => {
         c.add(wire1).add(wire2).add(wire3).add(wire4);
-        console.log(c);
         expect(c.nodes).toContain(wire1.id);
         expect(c.nodes).toContain(wire2.id);
         expect(c.nodes).toContain(wire3.id);
@@ -77,8 +78,10 @@ describe('Circuits', () => {
     });
 
     it('can detect when they are NOT closed', () => {
-        c.add(wire1).add(wire2).add(wire3).add(wire4);
-        c.connect(wire1, wire2).connect(wire2, wire3).connect(wire3, wire4);
+        const b = new Battery(5, 'battery1');
+        c.add(wire1).add(wire2).add(wire3).add(wire4).add(b);
+        c.connect(b, wire1).connect(b, wire2).connect(wire1, wire3).connect(wire2, wire4);
+        console.log(c);
         expect(c.isClosed()).toBe(false);
     });
 
