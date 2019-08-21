@@ -1,4 +1,4 @@
-import { Wire } from './wire';
+import { Wire } from './Wire';
 import { Battery } from './Battery';
 
 describe('Wire', () => {

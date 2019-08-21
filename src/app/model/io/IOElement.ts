@@ -5,8 +5,8 @@ export abstract class IOElement implements ReceivesSignal, TransmitsSignal {
     public out: ReceivesSignal[];
     public name: string;
 
-    abstract receive(signal: number, from: TransmitsSignal): void;
-    abstract transmit(signal: number, from?: TransmitsSignal): Promise;
+    abstract receive(signal: number, from: TransmitsSignal): Promise<T>;
+    abstract transmit(signal: number, from?: TransmitsSignal): Promise<>;
     abstract connectToInput(input: TransmitsSignal): void;
     abstract connectToOutput(output: ReceivesSignal): void;
     abstract connectTo(connector: TransmitsSignal & ReceivesSignal): void;
