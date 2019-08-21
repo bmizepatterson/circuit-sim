@@ -1,13 +1,14 @@
-import { Battery, Wire } from './index';
+import { Battery } from './Battery';
+import { Wire } from './Wire';
 
-describe('Battery', () => {
+describe('Batteries', () => {
     let b1 = null;
 
     beforeEach(() => {
         b1 = new Battery(5, 'battery1');
     });
 
-    it('is available', () => {
+    it('are available', () => {
         expect(b1).toBeTruthy();
     });
 

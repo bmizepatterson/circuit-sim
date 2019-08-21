@@ -11,3 +11,4 @@ export interface TransmitsSignal {
 export { IOElement } from './IOElement';
 export { Wire } from './Wire';
 export { Battery } from './Battery';
+export { Circuit } from './Circuit';

@@ -1,14 +1,14 @@
 import { Wire } from './Wire';
 import { Battery } from './Battery';
 
-describe('Wire', () => {
+describe('Wires', () => {
     let wire1 = null;
 
     beforeEach(() => {
         wire1 = new Wire('wire1');
     });
 
-    it('is available', () => {
+    it('are available', () => {
         expect(wire1).toBeTruthy();
     });
 

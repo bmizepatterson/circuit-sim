@@ -30,15 +30,15 @@ export class Wire extends IOElement {
         this.transmit(signal, from);
     }
 
-    transmit(signal: number, from?: IOElement): Promise<void> {
+    transmit(signal: number, from?: IOElement) {
         // Transmit to ALL connectors except the source
-        // this.out.filter(out => out !== from || !from)
-        //     .forEach(out => {
-        //         console.log(this.name + ' is sending a ' + signal + ' to ' + out.name);
-        //         out.receive(signal, this)
-        //     });
-        const results = this.out.filter(out => out !== from || !from).map(out => out.receive(signal, this));
-        return Promise.all(results);
+        this.out.filter(out => out !== from || !from)
+            .forEach(out => {
+                // console.log(this.name + ' is sending a ' + signal + ' to ' + out.name);
+                out.receive(signal, this);
+            });
+        // const results = this.out.filter(out => out !== from || !from).map(out => out.receive(signal, this));
+        // return Promise.all(results);
     }
 
     connectToInput(input: IOElement) {

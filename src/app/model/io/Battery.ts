@@ -13,18 +13,12 @@ export class Battery extends IOElement {
         return null;
     }
 
-    transmit(): Promise<void[]> {
-        // this.out.forEach(out => out.receive(this.voltage, this));
-        const results = this.out.map(out => out.receive(this.voltage, this));
-        return Promise.all(results);
-        // new Promise(resolve => {
-        //     .then(resolve);
-        // });
+    transmit() {
+        this.out.forEach(out => out.receive(this.voltage, this));
     }
 
-    receive(): Promise<void[]> {
+    receive() {
         // No operation: Batteries can't receive signals.
-        return Promise.resolve(void[]);
     }
 
     connectToInput(input: IOElement) {
