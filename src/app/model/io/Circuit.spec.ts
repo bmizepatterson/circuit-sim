@@ -2,11 +2,7 @@ import { Circuit } from './Circuit';
 import { Wire } from './Wire';
 
 describe('Circuits', () => {
-    let c = null;
-    let wire1 = null;
-    let wire2 = null;
-    let wire3 = null;
-    let wire4 = null;
+    let c = null, wire1 = null, wire2 = null, wire3 = null, wire4 = null;
 
     beforeEach(() => {
         c = new Circuit('circuit1');
@@ -20,33 +16,70 @@ describe('Circuits', () => {
         expect(c).toBeTruthy();
     });
 
-    it('can contain elements', () => {
+    it('can add nodes', () => {
         c.add(wire1).add(wire2).add(wire3).add(wire4);
-
-        expect(c.elements).toContain(wire1.id);
-        expect(c.elements).toContain(wire2.id);
-        expect(c.elements).toContain(wire3.id);
-        expect(c.elements).toContain(wire4.id);
-        expect(c.elements.length).toEqual(4);
+        console.log(c);
+        expect(c.nodes).toContain(wire1.id);
+        expect(c.nodes).toContain(wire2.id);
+        expect(c.nodes).toContain(wire3.id);
+        expect(c.nodes).toContain(wire4.id);
+        expect(c.nodes.length).toEqual(4);
     });
 
-    it('can contain connected elements', () => {
-        c.add(wire1).add(wire2).add(wire3).add(wire4);
-        c.connect(wire1, wire2)
-            .connect(wire2, wire3)
-            .connect(wire3, wire4)
-            .connect(wire1, wire4);
+    it('can remove nodes', () => {
+        c.add(wire1).add(wire2).remove(wire2);
+        expect(c.nodes).not.toContain(wire2.id);
+        expect(c.nodes.length).toEqual(1);
 
-        expect(c.graph[wire1.id]).not.toContain(wire1);
-        expect(c.graph[wire1.id]).toContain(wire2);
-        expect(c.graph[wire1.id]).not.toContain(wire3);
-        expect(c.graph[wire1.id]).toContain(wire4);
+        c.removeAll();
+        c.add(wire1).add(wire2).add(wire3).add(wire4);
+        c.connect(wire1, wire2).connect(wire2, wire3).connect(wire3, wire4);
+        c.remove(wire2);
+        expect(c.areConnected(wire1, wire4)).toBe(false);
     });
 
-    it('connects element A to element B only once', () => {
-        c.add(wire1);
-        c.connect(wire1, wire2).connect(wire1, wire2);
+    it('can remove all nodes', () => {
+        c.add(wire1).add(wire2).add(wire3).removeAll();
+        expect(c.nodes).toEqual([]);
+        expect(c.graph).toEqual({});
+        expect(c.elements).toEqual({});
+    });
+
+    it('can contain connected nodes', () => {
+        c.add(wire1).add(wire2).add(wire3).add(wire4);
+        c.connect(wire1, wire2).connect(wire2, wire3).connect(wire3, wire4).connect(wire1, wire4);
+        expect(c.graph[wire1.id]).not.toContain(wire1.id);
+        expect(c.graph[wire1.id]).toContain(wire2.id);
+        expect(c.graph[wire1.id]).not.toContain(wire3.id);
+        expect(c.graph[wire1.id]).toContain(wire4.id);
+    });
+
+    it('connect node A to node B only once', () => {
+        c.add(wire1).connect(wire1, wire2).connect(wire1, wire2);
         expect(c.graph[wire1.id].length).toEqual(1);
+    });
+
+    it('add missing nodes automatically when trying to connect them', () => {
+        c.connect(wire1, wire2);
+        expect(c.graph[wire1.id]).toContain(wire2.id);
+    });
+
+    it('can detect when they are closed', () => {
+        c.add(wire1).add(wire2).add(wire3).add(wire4);
+        c.connect(wire1, wire2).connect(wire2, wire3).connect(wire3, wire4).connect(wire4, wire1);
+        expect(c.isClosed()).toBe(true);
+
+        c.removeAll();
+        const wire5 = new Wire('wire5');
+        c.add(wire1).add(wire2).add(wire3).add(wire4).add(wire5);
+        c.connect(wire1, wire5).connect(wire2, wire3).connect(wire3, wire4).connect(wire4, wire2);
+        expect(c.isClosed()).toBe(true);
+    });
+
+    it('can detect when they are NOT closed', () => {
+        c.add(wire1).add(wire2).add(wire3).add(wire4);
+        c.connect(wire1, wire2).connect(wire2, wire3).connect(wire3, wire4);
+        expect(c.isClosed()).toBe(false);
     });
 
 });

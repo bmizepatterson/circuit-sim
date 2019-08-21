@@ -2,6 +2,7 @@ import { IOElement } from './IOElement';
 
 export class Circuit {
     id = 'circuit';
+    elements: CircuitElementList = {};
     graph: CircuitGraph = {};
 
     constructor(public name?: string) {
@@ -10,28 +11,140 @@ export class Circuit {
         }
     }
 
-    get elements(): string[] {
+    get nodes(): string[] {
         return Object.keys(this.graph);
     }
 
     get nextId(): string {
-        return this.id + '-' + this.elements.length;
+        if (this.nodes.length) {
+            const next = Math.max(...this.nodes.map(key => parseInt(key, 10))) + 1;
+            return next.toString();
+        }
+        return '0';
     }
 
     add(element: IOElement): this {
         element.id = this.nextId;
-        this.graph[this.nextId] = [];
+        this.elements[element.id] = element;
+        this.graph[element.id] = [];
+        return this;
+    }
+
+    remove(element: IOElement): this {
+        // Remove connections to this element
+        for (const node of this.nodes) {
+            const index = this.graph[node].findIndex(e => e === element.id);
+            if (index > -1) {
+                this.graph[node].splice(index, 1);
+            }
+        }
+        // Remove the element itself from the graph
+        delete this.elements[element.id];
+        delete this.graph[element.id];
+        return this;
+    }
+
+    removeAll(): this {
+        this.elements = this.graph = {};
         return this;
     }
 
     connect(element1: IOElement, element2: IOElement): this {
-        if (!this.graph[element1.id].includes(element2)) {
-            this.graph[element1.id].push(element2);
+        if (!this.nodes.includes(element1.id)) {
+            this.add(element1);
+        }
+        if (!this.nodes.includes(element2.id)) {
+            this.add(element2);
+        }
+        if (!this.graph[element1.id].includes(element2.id)) {
+            this.graph[element1.id].push(element2.id);
         }
         return this;
+    }
+
+    /**
+     * Determine whether element1 is connected to element2
+     */
+    areConnected(element1: IOElement, element2: IOElement): boolean {
+        return this.traverse(element1).includes(element2.id);
+    }
+
+    /**
+     * Determine whether the circuit is closed--i.e. the graph is cyclic.
+     * See https://hackernoon.com/the-javascript-developers-guide-to-graphs-and-detecting-cycles-in-them-96f4f619d563
+     * The stack param in the recursive function is the recursion stack and keeps track of the 'back edges',
+     * the nodes we visited to get us to the current node. If a child node ever connects to a node on the stack,
+     * that means we've come back around to where we started, we've found a cycle, and our circuit is closed.
+     */
+    isClosed(): boolean {
+
+        // Make a local copy of the graph
+        const graph = this.graph;
+        function isClosedRecursive(node: string, visited: GraphTraversalStatus, stack: GraphTraversalStatus): boolean {
+            if (!visited[node]) {
+                visited[node] = stack[node] = true;
+                const children = graph[node];
+                for (const child of children) {
+                    if (!visited[child] && isClosedRecursive(child, visited, stack)) {
+                        return true;
+                    } else if (stack[child]) {
+                        return true;
+                    }
+                }
+            }
+            // This node didn't initiate a cycle, so pop it off the stack.
+            stack[node] = false;
+            return false;
+        }
+
+        for (const node of this.nodes) {
+            if (isClosedRecursive(node, {}, {})) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Traverse the circuit starting with the given node.
+     * @param element Element to start with
+     * @returns CircuitElementList of reachable elements
+     */
+    traverse(element: IOElement): string[] {
+        const traversed = {};
+        this._deepSearchUtil(element.id, traversed);
+        return Object.keys(traversed);
+    }
+
+    deepSearch(): GraphTraversalStatus {
+        const visited = {};
+        for (const node of this.nodes) {
+            this._deepSearchUtil(node, visited);
+        }
+        return visited;
+    }
+
+    _deepSearchUtil(node: string, visited: GraphTraversalStatus, callback = (_: string) => {}) {
+        if (!visited[node]) {
+            visited[node] = true;
+            callback(node);
+            const neighbors = this.graph[node];
+            for (const neighbor of neighbors) {
+                this._deepSearchUtil(neighbor, visited);
+            }
+        }
     }
 }
 
 interface CircuitGraph {
-    [key: string]: IOElement[];
+    [key: string]: string[];
+}
+
+interface CircuitElementList {
+    [key: string]: IOElement;
+}
+
+// Used to keep track of nodes during a recursive graph traversal
+interface GraphTraversalStatus {
+    [key: string]: boolean;
 }
