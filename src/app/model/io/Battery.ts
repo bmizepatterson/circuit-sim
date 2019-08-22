@@ -1,6 +1,7 @@
 import { IOElement } from './IOElement';
+import { PowerSource } from './PowerSource';
 
-export class Battery extends IOElement {
+export class Battery extends IOElement implements PowerSource {
     public out: IOElement[] = [];
 
     constructor(readonly voltage: number, name?: string) {

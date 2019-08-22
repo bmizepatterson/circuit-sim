@@ -65,24 +65,24 @@ describe('Circuits', () => {
         expect(c.graph[wire1.id]).toContain(wire2.id);
     });
 
-    it('can detect when they are closed', () => {
+    it('are NOT closed when they lack a power source', () => {
         c.add(wire1).add(wire2).add(wire3).add(wire4);
         c.connect(wire1, wire2).connect(wire2, wire3).connect(wire3, wire4).connect(wire4, wire1);
-        expect(c.isClosed()).toBe(true);
-
-        c.removeAll();
-        const wire5 = new Wire('wire5');
-        c.add(wire1).add(wire2).add(wire3).add(wire4).add(wire5);
-        c.connect(wire1, wire5).connect(wire2, wire3).connect(wire3, wire4).connect(wire4, wire2);
-        expect(c.isClosed()).toBe(true);
+        expect(c.isClosed()).toBe(false);
     });
 
-    it('can detect when they are NOT closed', () => {
+    it('are NOT closed when they contain a power source NOT in a cycle', () => {
         const b = new Battery(5, 'battery1');
         c.add(wire1).add(wire2).add(wire3).add(wire4).add(b);
-        c.connect(b, wire1).connect(b, wire2).connect(wire1, wire3).connect(wire2, wire4);
-        console.log(c);
+        c.connect(b, wire1).connect(wire1, wire2).connect(wire2, wire3);
         expect(c.isClosed()).toBe(false);
+    });
+
+    it('ARE closed when they contain a power source inside a cycle', () => {
+        const b = new Battery(5, 'battery1');
+        c.add(wire1).add(wire2).add(wire3).add(wire4).add(b);
+        c.connect(b, wire1).connect(wire1, wire2).connect(wire2, wire3).connect(wire3, b).connect(wire2, wire4);
+        expect(c.isClosed()).toBe(true);
     });
 
 });

@@ -1,5 +1,6 @@
 import { IOElement } from './IOElement';
 import { Wire } from './Wire';
+import { isPowerSource } from './PowerSource';
 
 export class Circuit {
     id = 'circuit';
@@ -50,7 +51,7 @@ export class Circuit {
         return this;
     }
 
-    protected _connect(element1: IOElement, element2: IOElement): this {
+    connect(element1: IOElement, element2: IOElement): this {
         if (!this.nodes.includes(element1.id)) {
             this.add(element1);
         }
@@ -61,16 +62,6 @@ export class Circuit {
             this.graph[element1.id].push(element2.id);
         }
         return this;
-    }
-
-    connect(element1: IOElement, element2: IOElement): this {
-        if (element2 instanceof Wire) {
-            // Wires have reciprocal connections
-            this._connect(element1, element2);
-            this._connect(element2, element1);
-            return this;
-        }
-        return this._connect(element1, element2);
     }
 
     /**
@@ -128,9 +119,26 @@ export class Circuit {
         return Object.keys(traversed);
     }
 
+    /**
+     * Determine whether the circuit is "closed." A closed circuit is a circuit that contains a
+     * cycle with a power source.
+     */
     isClosed() {
-        // If there is no power source, then no
-        
+        // Search for a power source
+        const powerSourceNodes = this.nodes.filter(node => isPowerSource(this.elements[node]));
+
+        if (!powerSourceNodes.length) {
+            return false;
+        }
+
+        for (const powerSource of powerSourceNodes) {
+            if (this._isCyclicRecursive(powerSource, {}, {})) {
+                return true;
+            }
+        }
+
+        // No power sources are inside a cycle, so the circuit is open.
+        return false;
     }
 
     deepSearch(): GraphTraversalStatus {
