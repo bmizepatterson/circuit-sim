@@ -1,5 +1,4 @@
 import { IOElement } from './IOElement';
-import { Wire } from './Wire';
 import { isPowerSource } from './PowerSource';
 
 export class Circuit {
