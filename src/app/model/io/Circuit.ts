@@ -1,6 +1,10 @@
 import { IOElement } from './IOElement';
 import { isPowerSource } from './power/PowerSource';
+import { IOSignal } from './IOSignal';
 
+/**
+ * Represents the structure of a circuit.
+ */
 export class Circuit {
     id = 'circuit';
     elements: CircuitElementList = {};
@@ -46,7 +50,8 @@ export class Circuit {
     }
 
     removeAll(): this {
-        this.elements = this.graph = {};
+        this.elements = {};
+        this.graph = {};
         return this;
     }
 
@@ -87,8 +92,8 @@ export class Circuit {
     }
 
     protected _isCyclicRecursive(
-        node: string, visited: GraphTraversalStatus, stack: GraphTraversalStatus,
-        callback = (n: string, v: GraphTraversalStatus, s: GraphTraversalStatus): void => {}
+        node: string, visited: CircuitGraphStatus, stack: CircuitGraphStatus,
+        callback = (n: string, v: CircuitGraphStatus, s: CircuitGraphStatus): void => {}
     ): boolean {
         if (!visited[node]) {
             visited[node] = stack[node] = true;
@@ -140,7 +145,7 @@ export class Circuit {
         return false;
     }
 
-    deepSearch(): GraphTraversalStatus {
+    deepSearch(): CircuitGraphStatus {
         const visited = {};
         for (const node of this.nodes) {
             this._deepSearchUtil(node, visited);
@@ -148,7 +153,7 @@ export class Circuit {
         return visited;
     }
 
-    _deepSearchUtil(node: string, visited: GraphTraversalStatus, callback = (n: string, v: GraphTraversalStatus): void => {}) {
+    _deepSearchUtil(node: string, visited: CircuitGraphStatus, callback = (n: string, v: CircuitGraphStatus): void => {}) {
         if (!visited[node]) {
             visited[node] = true;
             callback(node, visited);
@@ -156,6 +161,31 @@ export class Circuit {
             for (const neighbor of neighbors) {
                 this._deepSearchUtil(neighbor, visited);
             }
+        }
+    }
+
+}
+
+/**
+ * Represents a circuit's state at any given time
+ * A new object is created after each advance of the circuit.
+ */
+export class CircuitState {
+
+    constructor(
+        public circuit: Circuit,    // The circuit whose state this object is representing
+        // public signal: IOSignal,    // The active signal
+        // public node: string,        // The active node
+        public isNodeActive: CircuitGraphStatus
+    ) { }
+
+    // get element(): IOElement {
+    //     return this.circuit.elements[this.node];
+    // }
+
+    advance() {
+        for (const node of this.circuit.nodes) {
+            // this.isNodeActive[node] = this.circuit.elements[node];
         }
     }
 }
@@ -169,6 +199,6 @@ interface CircuitElementList {
 }
 
 // Used to keep track of nodes during a recursive graph traversal
-interface GraphTraversalStatus {
+interface CircuitGraphStatus {
     [key: string]: boolean;
 }
