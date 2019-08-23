@@ -3,7 +3,7 @@ import { Battery } from './power/Battery';
 import { Relay } from './Relay';
 import { LED } from './LED';
 
-xdescribe('A circuit', () => {
+describe('A circuit', () => {
     let c = null, battery = null, led1 = null, led2 = null, relay1 = null, relay2 = null;
 
     beforeEach(() => {
@@ -56,29 +56,29 @@ xdescribe('A circuit', () => {
         expect(c.graph[relay2.id]).toContain(battery.id);
     });
 
-    xit('connects node A to node B only once.', () => {
+    it('connects node A to node B only once.', () => {
         c.add(battery).connect(battery, led1).connect(battery, led1);
         expect(c.graph[battery.id].length).toEqual(1);
     });
 
-    xit('adds missing nodes automatically when trying to connect them.', () => {
+    it('adds missing nodes automatically when trying to connect them.', () => {
         c.connect(battery, led1);
         expect(c.graph[battery.id]).toContain(led1.id);
     });
 
-    xit('without a power source is NOT closed.', () => {
+    it('without a power source is NOT closed.', () => {
         c.add(led1).add(led2).add(relay1);
         c.connect(led1, led2).connect(led2, relay1).connect(relay1, led1);
         expect(c.isClosed()).toBe(false);
     });
 
-    xit('with a power source NOT inside a cycle is NOT closed.', () => {
+    it('with a power source NOT inside a cycle is NOT closed.', () => {
         c.add(battery);
         c.connect(led1, led2).connect(led2, relay1).connect(relay1, led1);
         expect(c.isClosed()).toBe(false);
     });
 
-    xit('with a power source inside a cycle IS closed.', () => {
+    it('with a power source inside a cycle IS closed.', () => {
         c.connect(battery, led1).connect(led1, led2).connect(led2, relay1).connect(relay1, battery);
         expect(c.isClosed()).toBe(true);
 
