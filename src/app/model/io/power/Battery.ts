@@ -1,6 +1,6 @@
-import { IOElement } from './IOElement';
+import { IOElement } from '../IOElement';
 import { PowerSource } from './PowerSource';
-import { IOSignal } from './IOSignal';
+import { IOSignal } from '../IOSignal';
 
 export class Battery extends IOElement implements PowerSource {
 

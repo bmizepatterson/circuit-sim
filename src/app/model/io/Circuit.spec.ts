@@ -1,5 +1,5 @@
 import { Circuit } from './Circuit';
-import { Battery } from './Battery';
+import { Battery } from './power/Battery';
 import { Relay } from './Relay';
 import { LED } from './LED';
 

@@ -1,5 +1,5 @@
 import { Wire } from './Wire';
-import { Battery } from './Battery';
+import { Battery } from './power/Battery';
 
 // describe('A wire', () => {
     // let wire1 = null;

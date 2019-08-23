@@ -1,5 +1,5 @@
 import { Battery } from './Battery';
-import { IOSignal } from './IOSignal';
+import { IOSignal } from '../IOSignal';
 
 describe('A battery', () => {
     let b1 = null;

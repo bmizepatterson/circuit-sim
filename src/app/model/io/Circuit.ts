@@ -1,5 +1,5 @@
 import { IOElement } from './IOElement';
-import { isPowerSource } from './PowerSource';
+import { isPowerSource } from './power/PowerSource';
 
 export class Circuit {
     id = 'circuit';
