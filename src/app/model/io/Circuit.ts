@@ -1,5 +1,5 @@
 import { IOElement } from './IOElement';
-import { isPowerSource } from './power/PowerSource';
+import { isPowerSource, PowerSource } from './power/PowerSource';
 import { IOSignal } from './IOSignal';
 
 /**
@@ -9,6 +9,7 @@ export class Circuit {
     id = 'circuit';
     elements: CircuitElementList = {};
     graph: CircuitGraph = {};
+    active = true;
 
     constructor(public name?: string) {
         if (!name) {
@@ -164,6 +165,41 @@ export class Circuit {
         }
     }
 
+    run(delay = 1000) {
+        if (!this.isClosed()) {
+            console.log('Can\'t run an open circuit');
+            return;
+        }
+        // Start the circuit with the powersource(s)
+        for (const node of this.nodes) {
+            const element = this.elements[node];
+            if (isPowerSource(element)) {
+                const output = element.processSignal();
+                console.log(element.name + ' is sending an output of ' + output.voltage);
+                this._runRecursive(output, node, delay);
+            }
+        }
+    }
+
+    _runRecursive(input: IOSignal, parentNode: string, delay: number) {
+        if (this.active) {
+            for (const child of this.graph[parentNode]) {
+                const childElement = this.elements[child];
+                console.log(childElement.name + ' is receiving an input of ' + input.voltage);
+                const output = childElement.processSignal(input);
+                console.log(childElement.name + ' is sending an output of ' + output.voltage);
+                // Step through the circuit slowly
+                setTimeout(() => {
+                    this._runRecursive(output, child, delay);
+                }, delay);
+            }
+        }
+    }
+
+    stop() {
+        this.active = false;
+    }
+
 }
 
 /**
@@ -174,20 +210,18 @@ export class CircuitState {
 
     constructor(
         public circuit: Circuit,    // The circuit whose state this object is representing
-        // public signal: IOSignal,    // The active signal
-        // public node: string,        // The active node
-        public isNodeActive: CircuitGraphStatus
+        public signal: IOSignal,    // The active signal
+        public node: string,        // The active node
     ) { }
 
-    // get element(): IOElement {
-    //     return this.circuit.elements[this.node];
-    // }
-
-    advance() {
-        for (const node of this.circuit.nodes) {
-            // this.isNodeActive[node] = this.circuit.elements[node];
-        }
+    get element(): IOElement {
+        return this.circuit.elements[this.node];
     }
+
+    // advance(): CircuitState {
+    //     const nextNode = this.circuit.graph[this.node];
+
+    // }
 }
 
 interface CircuitGraph {

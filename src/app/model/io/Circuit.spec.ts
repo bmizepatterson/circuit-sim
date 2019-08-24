@@ -87,4 +87,9 @@ describe('A circuit', () => {
         expect(c.isClosed()).toBe(true);
     });
 
+    it('runs a simple circuit.', () => {
+        c.connect(battery, led1).connect(led1, led2).connect(led2, battery);
+        c.run();
+    });
+
 });
